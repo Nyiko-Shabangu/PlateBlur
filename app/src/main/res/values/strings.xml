@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">plateblur</string>
+
+    <!-- Previous strings remain the same -->
+    <string name="blur_intensity">Blur Intensity</string>
+    <string name="blur_slider_description">Adjust blur intensity from 20 to 100</string>
+    <string name="blur_value_format">Current blur: %d</string>
+</resources>
