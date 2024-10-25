@@ -87,7 +87,7 @@ Using **Azure**:
 - **Blob Storage**: Image and document storage
 - **SQL Database**: Relational storage
 - **Functions**: Serverless photo processing and PDF generation
-- **API Management**: Manages API security and access.
+- **API Management**: Manages API security and access
 
 ## Security
 Security mechanisms address potential threats such as phishing, unauthorized data access, and external attacks. Key measures:
