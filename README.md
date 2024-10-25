@@ -97,7 +97,7 @@ Security mechanisms address potential threats such as phishing, unauthorized dat
 - **OAuth 2.0** for secure external API integration.
 
 ## DevOps Pipeline
-Using **GitHub Actions** for CI/CD, with steps for:
+Using **CirlceCI ** for CI/CD, with steps for:
 1. Code Checkout
 2. Environment Setup
 3. Linting & Testing
