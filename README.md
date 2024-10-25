@@ -105,6 +105,12 @@ Using **GitHub Actions** for CI/CD, with steps for:
 5. Deployment to Staging
 6. Manual Deployment to Production
 
+## ScreanShots
+
+![Screenshot_20241025_200957_plateblur](https://github.com/user-attachments/assets/237a4f02-40e7-4ca8-aa93-e63a945483bb)
+
+![Screenshot_20241025_195844_plateblur](https://github.com/user-attachments/assets/dc944a63-3206-4c33-9471-05ba8d61b17a)
+
 
 
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/e6SRsF6I)
