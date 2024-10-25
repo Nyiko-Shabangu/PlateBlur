@@ -13,8 +13,8 @@ jobs:
           command: chmod +x gradlew  # Ensure gradlew is executable
 
       - run:
-          name: "Build the Android project"
-          command: ./gradlew build  # Build your Android project
+          name: "Build the Android project with warnings"
+          command: ./gradlew build --warning-mode all  # Build your Android project with warning mode enabled
 
       - run:
           name: "Run unit tests"
