@@ -9,24 +9,23 @@ jobs:
       - checkout  # Check out the code from your repository
       
       - run:
-          name: "Set up environment"
-          command: |
-            echo "Setting up environment"
-            # Add any setup commands here if necessary
+          name: "Set executable permissions for gradlew"
+          command: chmod +x gradlew  # Ensure gradlew is executable
 
       - run:
           name: "Build the Android project"
-          command: ./gradlew build  # This assumes you have gradlew in your project root
+          command: ./gradlew build  # Build your Android project
 
       - run:
-          name: "Run tests"
-          command: ./gradlew test  # This will run unit tests
+          name: "Run unit tests"
+          command: ./gradlew test  # Run unit tests
 
       - run:
           name: "Run UI tests"
-          command: ./gradlew connectedAndroidTest  # This will run UI tests on connected devices
+          command: ./gradlew connectedAndroidTest  # Run UI tests on connected devices
 
 workflows:
   build-workflow:
     jobs:
       - build-android
+
