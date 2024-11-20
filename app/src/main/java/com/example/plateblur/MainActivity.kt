@@ -56,18 +56,42 @@ class MainActivity : AppCompatActivity() {
      * - Legacy formats
      * - Special formats for different provinces
      */
-    private val licensePlatePattern = Regex(
-        "(\\b[A-Z]{2}\\s?\\d{2,3}\\s?[A-Z]{2,3}\\b)|" +  // CA 123 GP
-                "(\\b[A-Z]{2}\\s*\\d{2,3}\\s*[A-Z]{2,3}\\b)|" +  // CA123GP
-                "(\\b[A-Z]{3}\\s?\\d{3}\\s?[A-Z]{2}\\b)|" +      // XYZ 123 GP
-                "(\\b[A-Z]{2}-\\d{3}-\\d{3}\\b)|" +              // ND-123-456
-                "(\\b[A-Z]{1}\\s?\\d{3}\\s?[A-Z]{3}\\s?[A-Z]{1}\\b)|" + // B 123 ABC L
-                "(\\b[A-Z]{1}\\s?\\d{1,5}\\b)|" +                // T 12345
-                "(\\b[A-Z]{2}\\s?\\d{3}\\s?\\d{3}\\b)|" +        // CJ 123 456
-                "(\\b[A-Z0-9]{1,7}\\s?[A-Z]{2,3}\\b)|" +         // Custom plates
-                "(\\b[A-Z]{2}\\s?\\d{2}\\s?[A-Z]{2}\\s?[A-Z]{2}\\b)"+ // DN 88 RB GP
-        "(\\b[A-Z]{2}\\s?\\d{2}\\s?[A-Z]{2}\\s?[A-Z]{2}\\b)" // DG 70 MW GP
+
+    /**
+     * Enhanced regex patterns for different license plate formats
+     * Split into separate patterns for better matching accuracy
+     */
+    private val licensePlatePatterns = listOf(
+        // Standard provincial format (e.g., CA 123 GP)
+        Regex("\\b[A-Z]{2}\\s*\\d{1,3}\\s*[A-Z]{2,3}\\b"),
+
+        // Newer format with additional characters (e.g., DN 88 RB GP)
+        Regex("\\b[A-Z]{2}\\s*\\d{2}\\s*[A-Z]{2}\\s*[A-Z]{2}\\b"),
+
+        // Custom/Personalized format
+        Regex("\\b[A-Z0-9]{1,7}\\s*[A-Z]{2,3}\\b"),
+
+        // Western Cape format (e.g., CJ 123 456)
+        Regex("\\b[A-Z]{2}\\s*\\d{3}\\s*\\d{3}\\b"),
+
+        // Limpopo format (e.g., B 123 ABC L)
+        Regex("\\b[A-Z]\\s*\\d{3}\\s*[A-Z]{3}\\s*[A-Z]\\b"),
+
+        // Legacy format (e.g., T 12345)
+        Regex("\\b[A-Z]\\s*\\d{1,5}\\b"),
+
+        // Additional format with dashes (e.g., ND-123-456)
+        Regex("\\b[A-Z]{2}-\\d{3}-\\d{3}\\b"),
+
+        // GP format (e.g., CF 90 MW GP)
+        Regex("\\b[A-Z]{2}\\s*\\d{2}\\s*[A-Z]{2}\\s*[A-Z]{2}\\b"),
+
+        // Custom format (e.g., xyp927)
+        Regex("\\b[a-zA-Z]{3}\\d{3}\\b")
+
+
     )
+
 
     // Activity result handler for camera capture
     private val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
@@ -210,53 +234,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-//    /**
-//     * Process the image to detect and blur license plates
-//     */
-//    private fun processImage(uri: Uri) {
-//        try {
-//            val image = InputImage.fromFilePath(this, uri)
-//
-//            textRecognizer.process(image)
-//                .addOnSuccessListener { visionText ->
-//                    try {
-//                        val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
-//                        val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
-//                        val canvas = Canvas(mutableBitmap)
-//                        var platesFound = 0
-//                        val allText = visionText.text.replace(" ", "")
-//
-//                        if (licensePlatePattern.containsMatchIn(allText)) {
-//                            for (block in visionText.textBlocks) {
-//                                for (line in block.lines) {
-//                                    val lineText = line.text.replace(" ", "")
-//                                    if (licensePlatePattern.matches(lineText)) {
-//                                        platesFound++
-//                                        blurLicensePlate(canvas, line.boundingBox)
-//                                    }
-//                                }
-//                            }
-//                        }
-//
-//                        val savedFile = saveProcessedImage(mutableBitmap)
-//                        imageView.setImageBitmap(mutableBitmap)
-//                        showLoading(false)
-//                        showMessage("Found and blurred $platesFound license plates. Saved to: ${savedFile?.name}")
-//                    } catch (e: Exception) {
-//                        handleError("Error processing image: ${e.message}")
-//                    }
-//                }
-//                .addOnFailureListener { e ->
-//                    handleError("Text recognition failed: ${e.message}")
-//                }
-//        } catch (e: Exception) {
-//            handleError("Error loading image: ${e.message}")
-//        }
-//    }
+
 
 
     /**
-     * Process the image to detect and blur license plates while preserving orientation
+     * Process the image with enhanced license plate detection
      */
     private fun processImage(uri: Uri) {
         try {
@@ -265,10 +247,8 @@ class MainActivity : AppCompatActivity() {
             textRecognizer.process(image)
                 .addOnSuccessListener { visionText ->
                     try {
-                        // Get original bitmap and its orientation
+                        // Get original bitmap and orientation
                         val (originalBitmap, orientation) = getOriginalBitmapWithOrientation(uri)
-
-                        // Create mutable bitmap with correct orientation
                         val mutableBitmap = if (orientation != ExifInterface.ORIENTATION_NORMAL) {
                             getRotatedBitmap(originalBitmap, orientation)
                         } else {
@@ -276,26 +256,21 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         val canvas = Canvas(mutableBitmap)
-                        var platesFound = 0
-                        val allText = visionText.text.replace(" ", "")
+                        val detectedPlates = mutableSetOf<DetectedPlate>()
 
-                        if (licensePlatePattern.containsMatchIn(allText)) {
-                            for (block in visionText.textBlocks) {
-                                for (line in block.lines) {
-                                    val lineText = line.text.replace(" ", "")
-                                    if (licensePlatePattern.matches(lineText)) {
-                                        platesFound++
-                                        blurLicensePlate(canvas, line.boundingBox)
-                                    }
-                                }
-                            }
+                        // Process text blocks with multiple strategies
+                        processTextBlocks(visionText, detectedPlates)
+
+                        // Apply blur to detected plates
+                        for (plate in detectedPlates) {
+                            blurLicensePlate(canvas, plate.boundingBox)
                         }
 
-                        // Save the processed image with original orientation
+                        // Save and display results
                         val savedFile = saveProcessedImage(mutableBitmap, orientation)
                         imageView.setImageBitmap(mutableBitmap)
                         showLoading(false)
-                        showMessage("Found and blurred $platesFound license plates. Saved to: ${savedFile?.name}")
+                        showMessage("Found and blurred ${detectedPlates.size} license plates. Saved to: ${savedFile?.name}")
 
                     } catch (e: Exception) {
                         handleError("Error processing image: ${e.message}")
@@ -306,6 +281,114 @@ class MainActivity : AppCompatActivity() {
                 }
         } catch (e: Exception) {
             handleError("Error loading image: ${e.message}")
+        }
+    }
+
+    /**
+     * Data class to store detected plate information
+     */
+    private data class DetectedPlate(
+        val text: String,
+        val boundingBox: Rect?,
+        val confidence: Float
+    )
+
+    /**
+     * Process text blocks with multiple strategies for better detection
+     */
+    private fun processTextBlocks(
+        visionText: com.google.mlkit.vision.text.Text,
+        detectedPlates: MutableSet<DetectedPlate>
+    ) {
+        val textBlocks = visionText.textBlocks
+
+        // First pass: Check individual lines
+        for (block in textBlocks) {
+            for (line in block.lines) {
+                processTextLine(line, detectedPlates)
+            }
+        }
+
+        // Second pass: Check merged lines within blocks
+        for (block in textBlocks) {
+            val mergedText = block.lines.joinToString(" ") { it.text }
+            processText(mergedText, block.boundingBox, block.lines[0].confidence, detectedPlates)
+        }
+
+        // Third pass: Check text with different cleaning strategies
+        for (block in textBlocks) {
+            for (line in block.lines) {
+                processTextWithVariations(line, detectedPlates)
+            }
+        }
+    }
+
+    /**
+     * Process individual text line
+     */
+    private fun processTextLine(
+        line: com.google.mlkit.vision.text.Text.Line,
+        detectedPlates: MutableSet<DetectedPlate>
+    ) {
+        // Process original text
+        processText(line.text, line.boundingBox, line.confidence, detectedPlates)
+
+        // Process without spaces
+        processText(
+            line.text.replace(" ", ""),
+            line.boundingBox,
+            line.confidence,
+            detectedPlates
+        )
+    }
+
+    /**
+     * Process text with different variations to improve detection
+     */
+    private fun processTextWithVariations(
+        line: com.google.mlkit.vision.text.Text.Line,
+        detectedPlates: MutableSet<DetectedPlate>
+    ) {
+        val variations = listOf(
+            line.text,                              // Original text
+            line.text.replace(" ", ""),             // No spaces
+            line.text.replace("0", "O"),            // Common OCR mistake: 0 to O
+            line.text.replace("O", "0"),            // Common OCR mistake: O to 0
+            line.text.replace("I", "1"),            // Common OCR mistake: I to 1
+            line.text.replace("1", "I"),            // Common OCR mistake: 1 to I
+            line.text.replace("S", "5"),            // Common OCR mistake: S to 5
+            line.text.replace("5", "S"),            // Common OCR mistake: 5 to S
+            line.text.replace("B", "8"),            // Common OCR mistake: B to 8
+            line.text.replace("8", "B"),            // Common OCR mistake: 8 to B
+            line.text.uppercase()                   // Force uppercase
+        )
+
+        for (variant in variations) {
+            processText(variant, line.boundingBox, line.confidence, detectedPlates)
+        }
+    }
+
+    /**
+     * Process text with multiple patterns
+     */
+    private fun processText(
+        text: String,
+        boundingBox: Rect?,
+        confidence: Float,
+        detectedPlates: MutableSet<DetectedPlate>
+    ) {
+        for (pattern in licensePlatePatterns) {
+            if (pattern.containsMatchIn(text)) {
+                pattern.find(text)?.value?.let { plateText ->
+                    detectedPlates.add(
+                        DetectedPlate(
+                            text = plateText,
+                            boundingBox = boundingBox,
+                            confidence = confidence
+                        )
+                    )
+                }
+            }
         }
     }
 
@@ -390,21 +473,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-//    /**
-//     * Save the processed image to storage
-//     */
-//    private fun saveProcessedImage(bitmap: Bitmap): File? {
-//        return try {
-//            val imageFile = createImageFile()
-//            FileOutputStream(imageFile).use { out ->
-//                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-//            }
-//            imageFile
-//        } catch (e: Exception) {
-//            handleError("Error saving image: ${e.message}")
-//            null
-//        }
-//    }
 
     /**
      * Save the processed image while preserving orientation
