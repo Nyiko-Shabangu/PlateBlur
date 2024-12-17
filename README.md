@@ -1,4 +1,4 @@
-# License Plate Blur - Android Privacy Protection App
+![Screenshot_20241217_233745_plateblur](https://github.com/user-attachments/assets/dff36ffe-835f-4bbe-8ecb-46141b33931d)# License Plate Blur - Android Privacy Protection App
 
 ## Project Overview
 
@@ -53,6 +53,15 @@ License Plate Blur is an Android application designed to automatically detect an
 ## Permissions Required
 - Camera access
 - Storage read/write permissions
+
+## Screanshots
+
+
+![Screenshot_20241217_233735_plateblur](https://github.com/user-attachments/assets/6a57a68c-39c5-4ae7-8e68-0c393a36859b)
+
+![Screenshot_20241217_233745_plateblur](https://github.com/user-attachments/assets/c2c8de15-4a68-425b-9392-77bf1bb4fd3b)
+
+
 
 ## Future Improvements
 - Support for international license plate formats
