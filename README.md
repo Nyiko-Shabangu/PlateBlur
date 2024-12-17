@@ -1,4 +1,4 @@
-![Screenshot_20241217_233745_plateblur](https://github.com/user-attachments/assets/dff36ffe-835f-4bbe-8ecb-46141b33931d)# License Plate Blur - Android Privacy Protection App
+# License Plate Blur - Android Privacy Protection App
 
 ## Project Overview
 
