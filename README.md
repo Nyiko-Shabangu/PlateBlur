@@ -72,3 +72,5 @@ License Plate Blur is an Android application designed to automatically detect an
 
 ## License
 MIT License
+
+
