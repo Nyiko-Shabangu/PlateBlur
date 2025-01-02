@@ -68,6 +68,7 @@ License Plate Blur is an Android application designed to automatically detect an
 - Machine learning model training for improved accuracy
 - Enhanced blur techniques
 - User-configurable detection sensitivity
+  
 
 ## License
 MIT License
